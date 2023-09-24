@@ -2,6 +2,7 @@
 Implementation of shuffle lock on linux kernel v6.2.
 
 [paper](https://gts3.org/assets/papers/2019/kashyap:shfllock.pdf)
+[another_implementation](https://github.com/sslab-gatech/shfllock)
 
 ![Static Badge](https://img.shields.io/badge/linux-6.2.0-EABE41)
 
@@ -31,16 +32,16 @@ sudo ./llvm.sh 11
 ## 2) Execute Kernel Module
 ### 1. build
 ```sh
-cd modules/shuffle_lock
+cd modules/shfllock
 make
 ```
 ### 2. load
 ```sh
-insmod shuffle_lock.ko
+make load
 ```
 ### 3. unload
 ```sh
-rmmod shuffle_lock
+make unload
 ```
 ### 4. clean
 ```sh
