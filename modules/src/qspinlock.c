@@ -318,7 +318,7 @@ static __always_inline u32 __pv_wait_head_or_lock(struct qspinlock *lock,
  * contended             :    (*,x,y) +--> (*,0,0) ---> (*,0,1) -'  :
  *   queue               :         ^--'                             :
  */
-void __lockfunc queued_spin_lock_slowpath(struct qspinlock *lock, u32 val)
+void __lockfunc shuffle_spin_lock_slowpath(struct qspinlock *lock, u32 val)
 {
 	struct mcs_spinlock *prev, *next, *node;
 	u32 old, tail;
@@ -574,7 +574,7 @@ release:
 	 */
 	__this_cpu_dec(qnodes[0].mcs.count);
 }
-EXPORT_SYMBOL(queued_spin_lock_slowpath);
+EXPORT_SYMBOL(shuffle_spin_lock_slowpath);
 
 /*
  * Generate the paravirt code for queued_spin_unlock_slowpath().
