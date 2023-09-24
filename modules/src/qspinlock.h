@@ -42,13 +42,13 @@
 #include <asm-generic/qspinlock_types.h>
 #include <linux/atomic.h>
 
-#ifndef shuffle_spin_is_locked
+#ifndef shuffle_queued_spin_is_locked
 /**
- * shuffle_spin_is_locked - is the spinlock locked?
+ * shuffle_queued_spin_is_locked - is the spinlock locked?
  * @lock: Pointer to queued spinlock structure
  * Return: 1 if it is locked, 0 otherwise
  */
-static __always_inline int shuffle_spin_is_locked(struct qspinlock *lock)
+static __always_inline int shuffle_queued_spin_is_locked(struct qspinlock *lock)
 {
 	/*
 	 * Any !0 state indicates it is locked, even if _Q_LOCKED_VAL
@@ -59,7 +59,7 @@ static __always_inline int shuffle_spin_is_locked(struct qspinlock *lock)
 #endif
 
 /**
- * shuffle_spin_value_unlocked - is the spinlock structure unlocked?
+ * shuffle_queued_spin_value_unlocked - is the spinlock structure unlocked?
  * @lock: queued spinlock structure
  * Return: 1 if it is unlocked, 0 otherwise
  *
@@ -68,26 +68,26 @@ static __always_inline int shuffle_spin_is_locked(struct qspinlock *lock)
  *      code and change things underneath the lock. This also allows some
  *      optimizations to be applied without conflict with lockref.
  */
-static __always_inline int shuffle_spin_value_unlocked(struct qspinlock lock)
+static __always_inline int shuffle_queued_spin_value_unlocked(struct qspinlock lock)
 {
 	return !atomic_read(&lock.val);
 }
 
 /**
- * shuffle_spin_is_contended - check if the lock is contended
+ * shuffle_queued_spin_is_contended - check if the lock is contended
  * @lock : Pointer to queued spinlock structure
  * Return: 1 if lock contended, 0 otherwise
  */
-static __always_inline int shuffle_spin_is_contended(struct qspinlock *lock)
+static __always_inline int shuffle_queued_spin_is_contended(struct qspinlock *lock)
 {
 	return atomic_read(&lock->val) & ~_Q_LOCKED_MASK;
 }
 /**
- * shuffle_spin_trylock - try to acquire the queued spinlock
+ * shuffle_queued_spin_trylock - try to acquire the queued spinlock
  * @lock : Pointer to queued spinlock structure
  * Return: 1 if lock acquired, 0 if failed
  */
-static __always_inline int shuffle_spin_trylock(struct qspinlock *lock)
+static __always_inline int shuffle_queued_spin_trylock(struct qspinlock *lock)
 {
 	int val = atomic_read(&lock->val);
 
@@ -97,30 +97,30 @@ static __always_inline int shuffle_spin_trylock(struct qspinlock *lock)
 	return likely(atomic_try_cmpxchg_acquire(&lock->val, &val, _Q_LOCKED_VAL));
 }
 
-extern void shuffle_spin_lock_slowpath(struct qspinlock *lock, u32 val);
+extern void shuffle_queued_spin_lock_slowpath(struct qspinlock *lock, u32 val);
 
-#ifndef shuffle_spin_lock
+#ifndef shuffle_queued_spin_lock
 /**
- * shuffle_spin_lock - acquire a queued spinlock
+ * shuffle_queued_spin_lock - acquire a queued spinlock
  * @lock: Pointer to queued spinlock structure
  */
-static __always_inline void shuffle_spin_lock(struct qspinlock *lock)
+static __always_inline void shuffle_queued_spin_lock(struct qspinlock *lock)
 {
 	int val = 0;
 
 	if (likely(atomic_try_cmpxchg_acquire(&lock->val, &val, _Q_LOCKED_VAL)))
 		return;
 
-	shuffle_spin_lock_slowpath(lock, val);
+	shuffle_queued_spin_lock_slowpath(lock, val);
 }
 #endif
 
-#ifndef shuffle_spin_unlock
+#ifndef shuffle_queued_spin_unlock
 /**
- * shuffle_spin_unlock - release a queued spinlock
+ * shuffle_queued_spin_unlock - release a queued spinlock
  * @lock : Pointer to queued spinlock structure
  */
-static __always_inline void shuffle_spin_unlock(struct qspinlock *lock)
+static __always_inline void shuffle_queued_spin_unlock(struct qspinlock *lock)
 {
 	/*
 	 * unlock() needs release semantics:
@@ -140,11 +140,11 @@ static __always_inline bool virt_spin_lock(struct qspinlock *lock)
  * Remapping spinlock architecture specific functions to the corresponding
  * queued spinlock functions.
  */
-#define arch_spin_is_locked(l) shuffle_spin_is_locked(l)
-#define arch_spin_is_contended(l) shuffle_spin_is_contended(l)
-#define arch_spin_value_unlocked(l) shuffle_spin_value_unlocked(l)
-#define arch_spin_lock(l) shuffle_spin_lock(l)
-#define arch_spin_trylock(l) shuffle_spin_trylock(l)
-#define arch_spin_unlock(l) shuffle_spin_unlock(l)
+#define arch_spin_is_locked(l) shuffle_queued_spin_is_locked(l)
+#define arch_spin_is_contended(l) shuffle_queued_spin_is_contended(l)
+#define arch_spin_value_unlocked(l) shuffle_queued_spin_value_unlocked(l)
+#define arch_spin_lock(l) shuffle_queued_spin_lock(l)
+#define arch_spin_trylock(l) shuffle_queued_spin_trylock(l)
+#define arch_spin_unlock(l) shuffle_queued_spin_unlock(l)
 
 #endif /* __ASM_GENERIC_QSPINLOCK_H */

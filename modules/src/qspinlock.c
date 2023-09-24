@@ -318,7 +318,7 @@ static __always_inline u32 __pv_wait_head_or_lock(struct qspinlock *lock,
  * contended             :    (*,x,y) +--> (*,0,0) ---> (*,0,1) -'  :
  *   queue               :         ^--'                             :
  */
-void __lockfunc shuffle_spin_lock_slowpath(struct qspinlock *lock, u32 val)
+void __lockfunc shuffle_queued_spin_lock_slowpath(struct qspinlock *lock, u32 val)
 {
 	struct mcs_spinlock *prev, *next, *node;
 	u32 old, tail;
@@ -329,8 +329,8 @@ void __lockfunc shuffle_spin_lock_slowpath(struct qspinlock *lock, u32 val)
 	if (pv_enabled())
 		goto pv_queue;
 
-	if (virt_spin_lock(lock))
-		return;
+	// if (virt_spin_lock(lock))
+	// 	return;
 
 	/*
 	 * Wait for in-progress pending->locked hand-overs with a bounded
@@ -409,7 +409,7 @@ pv_queue:
 	idx = node->count++;
 	tail = encode_tail(smp_processor_id(), idx);
 
-	trace_contention_begin(lock, LCB_F_SPIN);
+	// trace_contention_begin(lock, LCB_F_SPIN);
 
 	/*
 	 * 4 nodes are allocated based on the assumption that there will
@@ -567,14 +567,14 @@ locked:
 	pv_kick_node(lock, next);
 
 release:
-	trace_contention_end(lock, 0);
+	// trace_contention_end(lock, 0);
 
 	/*
 	 * release the node
 	 */
 	__this_cpu_dec(qnodes[0].mcs.count);
 }
-EXPORT_SYMBOL(shuffle_spin_lock_slowpath);
+EXPORT_SYMBOL(shuffle_queued_spin_lock_slowpath);
 
 /*
  * Generate the paravirt code for queued_spin_unlock_slowpath().
