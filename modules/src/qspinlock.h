@@ -129,12 +129,12 @@ static __always_inline void shuffle_queued_spin_unlock(struct qspinlock *lock)
 }
 #endif
 
-#ifndef virt_spin_lock
-static __always_inline bool virt_spin_lock(struct qspinlock *lock)
-{
-	return false;
-}
-#endif
+// #ifndef virt_spin_lock
+// static __always_inline bool virt_spin_lock(struct qspinlock *lock)
+// {
+// 	return false;
+// }
+// #endif
 
 /*
  * Remapping spinlock architecture specific functions to the corresponding
