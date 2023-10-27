@@ -56,5 +56,5 @@ cd linux
 ```
 ### 2. Apply patchfile
 ```sh
-patch -p3 < /path/to/patch
+patch -p1 < /path/to/patch
 ```
